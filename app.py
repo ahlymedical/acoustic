@@ -24,7 +24,7 @@ def get_locale():
 
 # --- إعداد Firebase و GCS ---
 # تم تحديث معرف المشروع الاحتياطي هنا
-project_id = os.environ.get('GCP_PROJECT', 'acoustic-472311') 
+project_id = os.environ.get('GCP_PROJECT', 'lana-472315') 
 
 def get_secret(secret_id, version_id="latest"):
     client = secretmanager.SecretManagerServiceClient()
@@ -129,4 +129,4 @@ def get_task_status(task_id):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, debug=True)```
+    app.run(host='0.0.0.0', port=port, debug=True)
