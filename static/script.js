@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Firebase Configuration (UPDATED) ---
+    // --- Firebase Configuration (UPDATED FOR LANA PROJECT) ---
     const firebaseConfig = {
-        apiKey: "AIzaSyBdcg6_aJKKEk9W-ohASKZ1zyWCKrLAqio",
-        authDomain: "acoustic-472311.firebaseapp.com",
-        projectId: "acoustic-472311",
-        storageBucket: "acoustic-472311.appspot.com",
-        messagingSenderId: "112355337308",
-        appId: "1:112355337308:web:6098ee4fb8fd7006f7f299",
-        measurementId: "G-QKR53M58NK"
+        apiKey: "AIzaSyC4JhxTRmtA8wSMzcPnyGndDiFRSukq1-c",
+        authDomain: "lana-472315.firebaseapp.com",
+        projectId: "lana-472315",
+        storageBucket: "lana-472315.appspot.com", // Corrected from firebasestorage.app
+        messagingSenderId: "713909142851",
+        appId: "1:713909142851:web:4ec9969b7bbd88df459bf6",
+        measurementId: "G-659LFJYGQX"
     };
 
     // --- Initialize Firebase ---
