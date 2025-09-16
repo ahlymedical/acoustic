@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ستوديو الذكاء الصوتي | Acoustic AI Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="user-auth">
+            <button id="login-btn" class="auth-btn"><i class="fab fa-google"></i> تسجيل الدخول بحساب جوجل</button>
+            <div id="user-info" class="hidden">
+                <span id="user-email"></span>
+                <button id="logout-btn" class="auth-btn">تسجيل الخروج</button>
+            </div>
+        </div>
+        <h1><i class="fas fa-wave-square"></i> ستوديو الذكاء الصوتي</h1>
+        <p>أدوات احترافية لمعالجة الصوت بالذكاء الاصطناعي</p>
+    </header>
+
+    <main class="container" id="main-content" style="display: none;">
+        <!-- أداة فصل الموسيقى -->
+        <div class="tool-card" id="separator-card">
+            <div class="card-header">
+                <i class="fas fa-music"></i>
+                <h2>فصل مسارات الموسيقى</h2>
+            </div>
+            <p class="description">افصل صوت المغني، الطبول، البيس، أو غيرها من الآلات بجودة عالية.</p>
+            <form id="separator-form">
+                <label for="separator-file" class="file-label">
+                    <i class="fas fa-upload"></i>
+                    <span>اختر ملف الأغنية</span>
+                </label>
+                <input type="file" id="separator-file" name="audio_file" accept="audio/*" required>
+                <span id="separator-file-name" class="file-name"></span>
+                
+                <div class="options">
+                    <label>اختر المسارات المطلوب فصلها:</label>
+                    <div>
+                        <input type="checkbox" id="vocals" name="stems" value="vocals" checked>
+                        <label for="vocals">صوت المغني</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="drums" name="stems" value="drums">
+                        <label for="drums">الطبول (Drums)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="bass" name="stems" value="bass">
+                        <label for="bass">البيس (Bass)</label>
+                    </div>
+                     <div>
+                        <input type="checkbox" id="other" name="stems" value="other">
+                        <label for="other">آلات أخرى</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="process-btn">
+                    <i class="fas fa-cogs"></i> ابدأ الفصل
+                </button>
+            </form>
+            <div id="separator-results" class="results-area hidden"></div>
+        </div>
+
+        <!-- أداة تحسين الصوت -->
+        <div class="tool-card" id="enhancer-card">
+            <div class="card-header">
+                <i class="fas fa-microphone-alt"></i>
+                <h2>تحسين وتنقية التسجيل الصوتي</h2>
+            </div>
+            <p class="description">ارفع ملفك لإزالة الضوضاء (Noise) وتحسين وضوح الصوت ليبدو احترافيًا.</p>
+            <form id="enhancer-form">
+                <label for="enhancer-file" class="file-label">
+                    <i class="fas fa-upload"></i>
+                    <span>اختر ملفك الصوتي</span>
+                </label>
+                <input type="file" id="enhancer-file" name="audio_file" accept="audio/*" required>
+                <span id="enhancer-file-name" class="file-name"></span>
+                <button type="submit" class="process-btn">
+                    <i class="fas fa-magic"></i> ابدأ التحسين
+                </button>
+            </form>
+            <div id="enhancer-results" class="results-area hidden"></div>
+        </div>
+    </main>
+
+    <div id="login-prompt" class="login-prompt-container">
+        <h2>الرجاء تسجيل الدخول للمتابعة</h2>
+        <p>يجب أن تكون مسجلاً لتتمكن من استخدام أدوات معالجة الصوت.</p>
+    </div>
+
+    <div id="loader" class="loader-overlay hidden">
+        <div class="spinner"></div>
+        <p id="loader-text">جاري المعالجة... قد تستغرق هذه العملية عدة دقائق.</p>
+    </div>
+
+    <footer>
+        <p>تم التطوير باستخدام الذكاء الاصطناعي</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
