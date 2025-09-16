@@ -1,203 +1,230 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // =================================================================
-    // تم إدخال إعدادات Firebase الخاصة بك هنا
-    // =================================================================
+    // --- Firebase Configuration (UPDATED) ---
     const firebaseConfig = {
-        apiKey: "AIzaSyA7yDHMKVXJFzYxDVYbIIj-MaLyNiISSKE",
-        authDomain: "translation-470421-f18e8.firebaseapp.com",
-        projectId: "translation-470421-f18e8",
-        storageBucket: "translation-470421-f18e8.appspot.com", // Corrected storage bucket URL
-        messagingSenderId: "250174443342",
-        appId: "1:250174443342:web:0ac6deb18084078a3dd81f",
-        measurementId: "G-GMZYXQE6PL"
+        apiKey: "AIzaSyBdcg6_aJKKEk9W-ohASKZ1zyWCKrLAqio",
+        authDomain: "acoustic-472311.firebaseapp.com",
+        projectId: "acoustic-472311",
+        storageBucket: "acoustic-472311.appspot.com",
+        messagingSenderId: "112355337308",
+        appId: "1:112355337308:web:6098ee4fb8fd7006f7f299",
+        measurementId: "G-QKR53M58NK"
     };
 
-    // Initialize Firebase
+    // --- Initialize Firebase ---
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
 
-    // عناصر الواجهة
+    // --- DOM Elements ---
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const userInfo = document.getElementById('user-info');
-    const userEmail = document.getElementById('user-email');
+    const userEmailSpan = document.getElementById('user-email');
     const mainContent = document.getElementById('main-content');
     const loginPrompt = document.getElementById('login-prompt');
     const loader = document.getElementById('loader');
-    const loaderText = document.getElementById('loader-text');
 
     const separatorForm = document.getElementById('separator-form');
     const enhancerForm = document.getElementById('enhancer-form');
+    
+    const separatorFileInput = document.getElementById('separator-file');
+    const enhancerFileInput = document.getElementById('enhancer-file');
+    
+    const separatorFileName = document.getElementById('separator-file-name');
+    const enhancerFileName = document.getElementById('enhancer-file-name');
 
-    let currentUser = null;
+    const separatorResults = document.getElementById('separator-results');
+    const enhancerResults = document.getElementById('enhancer-results');
+
     let idToken = null;
 
-    // مراقبة حالة تسجيل الدخول
-    auth.onAuthStateChanged(async (user) => {
+    // --- Authentication Logic ---
+    auth.onAuthStateChanged(user => {
         if (user) {
-            currentUser = user;
-            idToken = await user.getIdToken();
-            
-            // تحديث الواجهة
-            userEmail.textContent = user.email;
-            userInfo.classList.remove('hidden');
-            loginBtn.classList.add('hidden');
-            mainContent.style.display = 'flex';
-            loginPrompt.style.display = 'none';
+            // User is signed in
+            user.getIdToken().then(token => {
+                idToken = token;
+                loginBtn.classList.add('hidden');
+                userInfo.classList.remove('hidden');
+                userEmailSpan.textContent = user.email;
+                mainContent.style.display = 'flex';
+                loginPrompt.style.display = 'none';
+            });
         } else {
-            currentUser = null;
+            // User is signed out
             idToken = null;
-
-            // تحديث الواجهة
-            userInfo.classList.add('hidden');
             loginBtn.classList.remove('hidden');
+            userInfo.classList.add('hidden');
             mainContent.style.display = 'none';
             loginPrompt.style.display = 'block';
         }
     });
 
-    // تسجيل الدخول
     loginBtn.addEventListener('click', () => {
-        const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider).catch(error => {
             console.error("Login failed:", error);
-            alert("فشل تسجيل الدخول.");
+            alert("فشل تسجيل الدخول. الرجاء المحاولة مرة أخرى.");
         });
     });
 
-    // تسجيل الخروج
     logoutBtn.addEventListener('click', () => {
         auth.signOut();
     });
 
-    // تحديث اسم الملف عند اختياره
-    updateFileName('separator-file', 'separator-file-name');
-    updateFileName('enhancer-file', 'enhancer-file-name');
+    // --- File Input Handlers ---
+    separatorFileInput.addEventListener('change', () => {
+        separatorFileName.textContent = separatorFileInput.files[0] ? separatorFileInput.files[0].name : '';
+    });
 
-    // التعامل مع رفع نموذج الفصل
+    enhancerFileInput.addEventListener('change', () => {
+        enhancerFileName.textContent = enhancerFileInput.files[0] ? enhancerFileInput.files[0].name : '';
+    });
+
+    // --- Form Submission Handlers ---
     separatorForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const fileInput = document.getElementById('separator-file');
-        if (fileInput.files.length === 0) {
-            alert('الرجاء اختيار ملف أولاً.');
+        const file = separatorFileInput.files[0];
+        if (!file) {
+            alert("الرجاء اختيار ملف أولاً.");
             return;
         }
-
         const formData = new FormData();
-        formData.append('audio_file', fileInput.files[0]);
+        formData.append('audio_file', file);
         formData.append('operation', 'separate');
         
-        // إضافة الـ stems المختارة
-        const checkedStems = separatorForm.querySelectorAll('input[name="stems"]:checked');
-        if (checkedStems.length === 0) {
+        const stems = separatorForm.querySelectorAll('input[name="stems"]:checked');
+        if (stems.length === 0) {
             alert("الرجاء اختيار مسار واحد على الأقل لفصله.");
             return;
         }
-        checkedStems.forEach(stem => {
+        stems.forEach(stem => {
             formData.append('stems', stem.value);
         });
 
-        startProcess(formData, 'separator-results');
+        startProcessing(formData, separatorResults);
     });
 
-    // التعامل مع رفع نموذج التحسين
     enhancerForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const fileInput = document.getElementById('enhancer-file');
-        if (fileInput.files.length === 0) {
-            alert('الرجاء اختيار ملف أولاً.');
+        const file = enhancerFileInput.files[0];
+        if (!file) {
+            alert("الرجاء اختيار ملف أولاً.");
+            return;
+        }
+        const formData = new FormData();
+        formData.append('audio_file', file);
+        formData.append('operation', 'enhance');
+        startProcessing(formData, enhancerResults);
+    });
+
+    // --- Core Processing Logic ---
+    async function startProcessing(formData, resultsArea) {
+        if (!idToken) {
+            alert("جلسة المستخدم غير صالحة. الرجاء تسجيل الدخول مرة أخرى.");
             return;
         }
 
-        const formData = new FormData();
-        formData.append('audio_file', fileInput.files[0]);
-        formData.append('operation', 'enhance');
-        startProcess(formData, 'enhancer-results');
-    });
+        loader.classList.remove('hidden');
+        resultsArea.classList.add('hidden');
+        resultsArea.innerHTML = '';
 
-    // بدء عملية المعالجة ومتابعتها
-    async function startProcess(formData, resultsId) {
-        showLoader(true, "جاري رفع الملف وبدء المعالجة...");
         try {
             const response = await fetch('/process', {
                 method: 'POST',
-                body: formData,
                 headers: {
                     'Authorization': `Bearer ${idToken}`
-                }
+                },
+                body: formData
             });
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.error || 'حدث خطأ أثناء بدء المعالجة.');
-            }
-            
-            const taskId = result.task_id;
-            showLoader(true, `بدأت المعالجة (ID: ${taskId}). سيتم تحديث الحالة تلقائياً.`);
-            pollTaskStatus(taskId, resultsId);
+            const data = await response.json();
 
+            if (response.ok) {
+                pollTaskStatus(data.task_id, resultsArea);
+            } else {
+                throw new Error(data.error || "حدث خطأ غير معروف.");
+            }
         } catch (error) {
-            alert(error.message);
-            showLoader(false);
+            console.error('Error starting processing:', error);
+            alert(`فشل بدء المعالجة: ${error.message}`);
+            loader.classList.add('hidden');
         }
     }
 
-    // متابعة حالة المهمة
-    function pollTaskStatus(taskId, resultsId) {
+    function pollTaskStatus(taskId, resultsArea) {
         const interval = setInterval(async () => {
             try {
                 const response = await fetch(`/task_status/${taskId}`, {
                     headers: { 'Authorization': `Bearer ${idToken}` }
                 });
+
+                if (!response.ok) {
+                    // Stop polling if task not found or auth error
+                    clearInterval(interval);
+                    loader.classList.add('hidden');
+                    alert("لم يتم العثور على المهمة أو حدث خطأ في المصادقة.");
+                    return;
+                }
+
                 const data = await response.json();
 
                 if (data.status === 'completed') {
                     clearInterval(interval);
-                    showLoader(false);
-                    displayResults(resultsId, data.results);
+                    loader.classList.add('hidden');
+                    displayResults(data.results, resultsArea);
                 } else if (data.status === 'failed') {
                     clearInterval(interval);
-                    showLoader(false);
-                    alert(`فشلت المهمة: ${data.error}`);
+                    loader.classList.add('hidden');
+                    alert(`فشلت المعالجة: ${data.error || 'خطأ غير معروف'}`);
                 }
-                // إذا كانت الحالة 'processing'، لا تفعل شيئًا واستمر في المتابعة
+                // If 'processing', continue polling
             } catch (error) {
                 clearInterval(interval);
-                showLoader(false);
-                alert("فشل الاتصال بالخادم لمتابعة الحالة.");
+                loader.classList.add('hidden');
+                console.error('Error polling task status:', error);
+                alert("حدث خطأ أثناء التحقق من حالة المهمة.");
             }
-        }, 5000); // متابعة كل 5 ثوانٍ
+        }, 5000); // Poll every 5 seconds
     }
 
-    function showLoader(show, text = "جاري المعالجة...") {
-        loaderText.textContent = text;
-        loader.classList.toggle('hidden', !show);
-    }
-
-    function displayResults(resultsId, files) {
-        const resultsArea = document.getElementById(resultsId);
+    function displayResults(results, resultsArea) {
         resultsArea.innerHTML = '<h3>النتائج جاهزة!</h3>';
-
-        for (const key in files) {
-            const trackName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize
-            const filePath = files[key];
-            
+        for (const trackName in results) {
+            const url = results[trackName];
             const trackElement = document.createElement('div');
             trackElement.className = 'result-track';
-            trackElement.innerHTML = `
-                <span>${trackName}</span>
-                <a href="${filePath}" class="download-btn" target="_blank" download><i class="fas fa-download"></i> تحميل</a>
-            `;
+            
+            const trackTitle = document.createElement('span');
+            trackTitle.textContent = getArabicTrackName(trackName);
+            
+            const audioPlayer = document.createElement('audio');
+            audioPlayer.controls = true;
+            audioPlayer.src = url;
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.textContent = 'تحميل';
+            downloadLink.className = 'download-btn';
+            downloadLink.target = '_blank'; // Open in new tab
+            downloadLink.download = ''; // Suggests browser to download
+
+            trackElement.appendChild(trackTitle);
+            trackElement.appendChild(audioPlayer);
+            trackElement.appendChild(downloadLink);
             resultsArea.appendChild(trackElement);
         }
         resultsArea.classList.remove('hidden');
     }
-
-    function updateFileName(fileInputId, fileNameId) {
-        const fileInput = document.getElementById(fileInputId);
-        const fileNameDisplay = document.getElementById(fileNameId);
-        fileInput.addEventListener('change', () => {
-            fileNameDisplay.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : '';
-        });
+    
+    function getArabicTrackName(trackName) {
+        const names = {
+            'vocals': 'صوت المغني',
+            'drums': 'الطبول',
+            'bass': 'البيس',
+            'other': 'آلات أخرى',
+            'instrumental': 'موسيقى فقط',
+            'enhanced': 'الصوت المحسّن'
+        };
+        return names[trackName.toLowerCase()] || trackName;
     }
 });
