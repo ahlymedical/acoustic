@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 from google.cloud import storage, secretmanager
 import firebase_admin
 from firebase_admin import auth, credentials, firestore
-from celery_worker import process_audio_task # استيراد المهمة
+from celery_worker import process_audio_task
 from flask_babel import Babel, gettext as _
 from functools import wraps
 import json
@@ -23,7 +23,8 @@ def get_locale():
     return request.accept_languages.best_match(['ar', 'en'])
 
 # --- إعداد Firebase و GCS ---
-project_id = os.environ.get('GCP_PROJECT', 'translation-470421') # Fallback for local testing
+# تم تحديث معرف المشروع الاحتياطي هنا
+project_id = os.environ.get('GCP_PROJECT', 'acoustic-472311') 
 
 def get_secret(secret_id, version_id="latest"):
     client = secretmanager.SecretManagerServiceClient()
@@ -38,14 +39,10 @@ if not firebase_admin._apps:
         firebase_admin.initialize_app(cred)
     except Exception as e:
         logging.error(f"Could not initialize Firebase: {e}")
-        # Fallback for local development without secrets
-        # cred = credentials.ApplicationDefault()
-        # firebase_admin.initialize_app(cred)
-
 
 db = firestore.client()
 storage_client = storage.Client()
-BUCKET_NAME = os.environ.get('GCS_BUCKET_NAME', 'audio-processing-bucket-12345') # Fallback
+BUCKET_NAME = os.environ.get('GCS_BUCKET_NAME', 'audio-processing-bucket-12345')
 ALLOWED_EXTENSIONS = {'wav', 'mp3', 'flac', 'm4a'}
 
 def allowed_file(filename):
@@ -132,4 +129,4 @@ def get_task_status(task_id):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=True)```
